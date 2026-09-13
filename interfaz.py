@@ -1,4 +1,5 @@
-from logica import calcular_resumen
+from logica import (buscar_por_nombre, filtrar_por_categoria,
+                    listar_categorias, calcular_resumen)
 
 
 def mostrar_alimentos(lista_alimentos):
@@ -40,3 +41,45 @@ def mostrar_resumen(lista_consumos):
     print("    Proteinas: " + str(resumen["proteinas"]) + " g")
     print("    Carbohidratos: " + str(resumen["carbohidratos"]) + " g")
     print("    Grasas: " + str(resumen["grasas"]) + " g")
+
+
+def opcion_buscar_alimento(lista_alimentos):
+    texto = input("Nombre o parte del nombre: ").strip()
+    while texto == "":
+        print("El nombre no puede estar vacio.")
+        texto = input("Nombre o parte del nombre: ").strip()
+
+    encontrados = buscar_por_nombre(lista_alimentos, texto)
+    if len(encontrados) == 0:
+        print("No se encontraron alimentos con ese nombre.")
+    else:
+        mostrar_alimentos(encontrados)
+
+
+def opcion_filtrar_categoria(lista_alimentos):
+    categorias = listar_categorias(lista_alimentos)
+    print("Categorias disponibles: " + ", ".join(categorias))
+
+    categoria = input("Categoria: ").strip()
+    while categoria == "":
+        print("La categoria no puede estar vacia.")
+        categoria = input("Categoria: ").strip()
+
+    encontrados = filtrar_por_categoria(lista_alimentos, categoria)
+    if len(encontrados) == 0:
+        print("No hay alimentos en esa categoria.")
+    else:
+        mostrar_alimentos(encontrados)
+
+
+def mostrar_menu():
+    print()
+    print("===== NutriLog =====")
+    print("1. Ver catalogo de alimentos")
+    print("2. Buscar alimento por nombre")
+    print("3. Filtrar alimentos por categoria")
+    print("4. Cargar alimento nuevo")
+    print("5. Registrar consumo")
+    print("6. Ver consumos de la jornada")
+    print("7. Ver resumen de la jornada")
+    print("0. Finalizar")
