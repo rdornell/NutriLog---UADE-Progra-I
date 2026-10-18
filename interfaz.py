@@ -1,3 +1,4 @@
+from modelo import fecha_valida, convertir_fecha
 from logica import (buscar_alimento, buscar_por_nombre, filtrar_por_categoria,
                     listar_categorias, agregar_alimento, registrar_consumo,
                     calcular_resumen, es_numero)
@@ -125,12 +126,8 @@ def opcion_cargar_alimento(lista_alimentos):
     print("El alimento " + nombre + " se cargo al catalogo.")
 
 
-def opcion_registrar_consumo(lista_alimentos, lista_consumos):
-    texto = input("Nombre del alimento consumido: ").strip()
-    while texto == "":
-        print("El nombre no puede estar vacio.")
-        texto = input("Nombre del alimento consumido: ").strip()
-
+def elegir_alimento(lista_alimentos, texto):
+    # busca por nombre completo y si no, acepta una sola coincidencia parcial
     alimento = buscar_alimento(lista_alimentos, texto)
     if alimento is None:
         encontrados = buscar_por_nombre(lista_alimentos, texto)
@@ -143,19 +140,54 @@ def opcion_registrar_consumo(lista_alimentos, lista_consumos):
             return
         alimento = encontrados[0]
 
-    gramos = 0
-    while gramos <= 0:
-        entrada = input("Cantidad en gramos: ")
-        if not es_numero(entrada):
-            print("La cantidad tiene que ser un numero positivo, por ejemplo 150")
-        else:
-            gramos = float(entrada)
-            if gramos <= 0:
-                print("La cantidad tiene que ser mayor que cero.")
+    return alimento
 
-    consumo = registrar_consumo(lista_consumos, alimento, gramos)
+
+def pedir_numero(mensaje, minimo, maximo, anterior):
+    valor = None
+    while valor is None:
+        entrada = input(mensaje).strip()
+        if entrada == "" and anterior is not None:
+            valor = anterior
+        elif es_numero(entrada) and float(entrada) >= minimo and float(entrada) <= maximo:
+            valor = float(entrada)
+        else:
+            print(f"Ingrese un numero entre {minimo} y {maximo}.")
+    return valor
+
+
+def pedir_gramos(anterior):
+    return pedir_numero("Cantidad en gramos: ", 0.001, 1000000, anterior)
+
+
+def opcion_registrar_consumo(lista_alimentos, lista_consumos, jornada):
+    texto = input("Nombre del alimento consumido (Enter para volver): ").strip()
+    if not texto:
+        return
+    alimento = elegir_alimento(lista_alimentos, texto)
+    if alimento is None:
+        return
+    gramos = pedir_gramos(None)
+    fecha = pedir_fecha("Ingrese la fecha del consumo (DD/MM/AAAA, Enter para la jornada): ", jornada, True)
+    consumo = registrar_consumo(lista_consumos, alimento, gramos, fecha)
     print("Se registro el consumo de " + str(gramos) + " g de " + alimento["nombre"] + ".")
     print("Aporte: " + str(consumo["calorias"]) + " calorias.")
+
+
+def pedir_fecha(mensaje, jornada, usar_jornada):
+    fecha = None
+    while fecha is None:
+        texto = input(mensaje).strip()
+        convertida = convertir_fecha(texto)
+        if jornada is not None and usar_jornada and texto == "":
+            fecha = jornada
+        elif not fecha_valida(convertida):
+            print("Ingrese una fecha valida con formato DD/MM/AAAA.")
+        elif jornada is not None and convertida > jornada:
+            print("La fecha no puede ser posterior a la jornada ingresada.")
+        else:
+            fecha = convertida
+    return fecha
 
 
 def mostrar_menu():
@@ -168,4 +200,5 @@ def mostrar_menu():
     print("5. Registrar consumo")
     print("6. Ver consumos de la jornada")
     print("7. Ver resumen de la jornada")
+    print("8. Consultar un dia del historial")
     print("0. Finalizar")

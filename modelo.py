@@ -1,3 +1,8 @@
+import re
+
+
+NUTRIENTES = ("calorias", "proteinas", "carbohidratos", "grasas")
+
 # Catalogo de alimentos de prueba, valores cada 100 gramos
 catalogo = [
     {"nombre": "Arroz blanco", "categoria": "Cereales",
@@ -18,4 +23,27 @@ catalogo = [
      "calorias": 247.0, "proteinas": 13.0, "carbohidratos": 41.0, "grasas": 3.4},
 ]
 
-consumos = []
+def fecha_valida(fecha):
+    if re.match("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", fecha) is None:
+        return False
+    anio, mes, dia = fecha.split("-")
+    anio = int(anio)
+    mes = int(mes)
+    dia = int(dia)
+    if anio == 0 or mes < 1 or mes > 12:
+        return False
+    dias = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    return dia >= 1 and dia <= dias[mes - 1]
+
+def convertir_fecha(texto):
+    """Pasa una fecha escrita como DD/MM/AAAA al formato interno AAAA-MM-DD."""
+    if re.match("^[0-9]{2}/[0-9]{2}/[0-9]{4}$", texto) is None:
+        return ""
+    dia, mes, anio = texto.split("/")
+    return anio + "-" + mes + "-" + dia
+
+
+def mostrar_fecha(fecha):
+    """Pasa una fecha guardada como AAAA-MM-DD a DD/MM/AAAA para mostrarla."""
+    anio, mes, dia = fecha.split("-")
+    return dia + "/" + mes + "/" + anio
