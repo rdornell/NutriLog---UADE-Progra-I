@@ -23,6 +23,15 @@ catalogo = [
      "calorias": 247.0, "proteinas": 13.0, "carbohidratos": 41.0, "grasas": 3.4},
 ]
 
+def tiene_texto(dato, clave):
+    return type(dato.get(clave)) == str and dato[clave].strip() != ""
+
+
+def tiene_numero(dato, clave):
+    valor = dato.get(clave)
+    return type(valor) in (int, float) and valor >= 0
+
+
 def fecha_valida(fecha):
     if re.match("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", fecha) is None:
         return False
@@ -47,3 +56,30 @@ def mostrar_fecha(fecha):
     """Pasa una fecha guardada como AAAA-MM-DD a DD/MM/AAAA para mostrarla."""
     anio, mes, dia = fecha.split("-")
     return dia + "/" + mes + "/" + anio
+
+
+def nutrientes_validos(dato):
+    for clave in NUTRIENTES:
+        if not tiene_numero(dato, clave):
+            return False
+    return True
+
+
+def alimento_valido(dato):
+    return (type(dato) == dict and tiene_texto(dato, "nombre")
+            and tiene_texto(dato, "categoria")
+            and nutrientes_validos(dato))
+
+
+def consumo_valido(dato):
+    if type(dato) != dict or not tiene_texto(dato, "fecha"):
+        return False
+    if not fecha_valida(dato["fecha"]):
+        return False
+    base = dato.get("base")
+    if "base" in dato and (type(base) != dict
+                           or not nutrientes_validos(base)):
+        return False
+    return (tiene_texto(dato, "nombre")
+            and tiene_numero(dato, "gramos") and dato["gramos"] > 0
+            and nutrientes_validos(dato))

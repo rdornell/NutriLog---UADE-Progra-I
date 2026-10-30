@@ -1,13 +1,14 @@
+from archivos import cargar_lista
 from logica import consumos_del_dia
-from modelo import catalogo, mostrar_fecha
+from modelo import catalogo, mostrar_fecha, alimento_valido, consumo_valido
 from interfaz import (mostrar_menu, mostrar_alimentos, mostrar_consumos, mostrar_resumen,
                       opcion_buscar_alimento, opcion_filtrar_categoria,
                       opcion_cargar_alimento, opcion_registrar_consumo, pedir_fecha)
 
 
 def main():
-    alimentos = catalogo.copy()
-    consumos = []
+    alimentos = cargar_lista("catalogo.json", catalogo, alimento_valido)
+    consumos = cargar_lista("consumos.json", [], consumo_valido)
     jornada = pedir_fecha("Ingrese la fecha de la jornada (DD/MM/AAAA): ", None, False)
     opcion = ""
     while opcion != "0":

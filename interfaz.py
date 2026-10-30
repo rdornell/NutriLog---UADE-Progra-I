@@ -1,3 +1,4 @@
+from archivos import guardar_lista
 from modelo import fecha_valida, convertir_fecha
 from logica import (buscar_alimento, buscar_por_nombre, filtrar_por_categoria,
                     listar_categorias, agregar_alimento, registrar_consumo,
@@ -123,6 +124,9 @@ def opcion_cargar_alimento(lista_alimentos):
 
     agregar_alimento(lista_alimentos, nombre, categoria,
                      calorias, proteinas, carbohidratos, grasas)
+    if not guardar_lista("catalogo.json", lista_alimentos):
+        lista_alimentos.pop()
+        return
     print("El alimento " + nombre + " se cargo al catalogo.")
 
 
@@ -170,6 +174,9 @@ def opcion_registrar_consumo(lista_alimentos, lista_consumos, jornada):
     gramos = pedir_gramos(None)
     fecha = pedir_fecha("Ingrese la fecha del consumo (DD/MM/AAAA, Enter para la jornada): ", jornada, True)
     consumo = registrar_consumo(lista_consumos, alimento, gramos, fecha)
+    if not guardar_lista("consumos.json", lista_consumos):
+        lista_consumos.pop()
+        return
     print("Se registro el consumo de " + str(gramos) + " g de " + alimento["nombre"] + ".")
     print("Aporte: " + str(consumo["calorias"]) + " calorias.")
 
