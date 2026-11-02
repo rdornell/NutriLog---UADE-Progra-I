@@ -74,8 +74,8 @@ def calcular_resumen(lista_consumos):
 
 
 def es_numero(texto):
-    # hasta 7 digitos, con una parte decimal opcional: 150 o 12.5
-    return re.match("^[0-9]{1,7}(\\.[0-9]+)?$", texto) is not None
+    # entero con una parte decimal opcional: 150 o 12.5
+    return re.match("^[0-9]+(\\.[0-9]+)?$", texto) is not None
 
 
 def consumos_del_dia(lista_consumos, fecha):

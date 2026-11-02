@@ -1,0 +1,8 @@
+[
+    {"sexo": "f", "actividad": "baja", "factor": 1.2},
+    {"sexo": "f", "actividad": "media", "factor": 1.5},
+    {"sexo": "f", "actividad": "alta", "factor": 1.7},
+    {"sexo": "m", "actividad": "baja", "factor": 1.2},
+    {"sexo": "m", "actividad": "media", "factor": 1.5},
+    {"sexo": "m", "actividad": "alta", "factor": 1.7}
+]

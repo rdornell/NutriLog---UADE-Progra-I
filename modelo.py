@@ -2,6 +2,8 @@ import re
 
 
 NUTRIENTES = ("calorias", "proteinas", "carbohidratos", "grasas")
+ACTIVIDADES = ("baja", "media", "alta")
+RANGOS_PERFIL = {"edad": (18, 120), "peso": (30, 350), "altura": (100, 250)}
 
 # Catalogo de alimentos de prueba, valores cada 100 gramos
 catalogo = [
@@ -83,3 +85,25 @@ def consumo_valido(dato):
     return (tiene_texto(dato, "nombre")
             and tiene_numero(dato, "gramos") and dato["gramos"] > 0
             and nutrientes_validos(dato))
+
+
+def perfil_valido(perfil):
+    if type(perfil) != dict or not tiene_texto(perfil, "nombre"):
+        return False
+    if perfil.get("sexo") not in ("f", "m") or perfil.get("actividad") not in ACTIVIDADES:
+        return False
+    if type(perfil.get("edad")) != int:
+        return False
+    for campo in RANGOS_PERFIL:
+        minimo, maximo = RANGOS_PERFIL[campo]
+        if not tiene_numero(perfil, campo):
+            return False
+        if perfil[campo] < minimo or perfil[campo] > maximo:
+            return False
+    return True
+
+
+def fila_referencia_valida(fila):
+    return (type(fila) == dict and fila.get("sexo") in ("f", "m")
+            and fila.get("actividad") in ACTIVIDADES and tiene_numero(fila, "factor")
+            and fila["factor"] >= 1 and fila["factor"] <= 3)

@@ -1,5 +1,6 @@
 from archivos import guardar_lista
-from modelo import fecha_valida, convertir_fecha
+from modelo import ACTIVIDADES, NUTRIENTES, RANGOS_PERFIL, fecha_valida, convertir_fecha
+from reportes import calcular_referencia, comparar
 from logica import (buscar_alimento, buscar_por_nombre, filtrar_por_categoria,
                     listar_categorias, agregar_alimento, registrar_consumo,
                     calcular_resumen, es_numero)
@@ -33,7 +34,7 @@ def mostrar_consumos(lista_consumos):
               " | Grasas: " + str(consumo["grasas"]) + " g")
 
 
-def mostrar_resumen(lista_consumos):
+def mostrar_resumen(lista_consumos, referencia):
     if len(lista_consumos) == 0:
         print("Todavia no hay consumos registrados en la jornada.")
         return
@@ -44,6 +45,11 @@ def mostrar_resumen(lista_consumos):
     print("    Proteinas: " + str(resumen["proteinas"]) + " g")
     print("    Carbohidratos: " + str(resumen["carbohidratos"]) + " g")
     print("    Grasas: " + str(resumen["grasas"]) + " g")
+    if referencia:
+        print("Comparacion con los valores diarios de referencia:")
+        for nutriente in NUTRIENTES:
+            porcentaje, estado = comparar(resumen[nutriente], referencia[nutriente])
+            print(f"    {nutriente}: {porcentaje} % de {referencia[nutriente]} ({estado})")
 
 
 def opcion_buscar_alimento(lista_alimentos):
@@ -90,40 +96,11 @@ def opcion_cargar_alimento(lista_alimentos):
         print("La categoria no puede estar vacia.")
         categoria = input("Categoria: ").strip()
 
-    calorias = -1
-    while calorias < 0:
-        entrada = input("Calorias cada 100 g: ")
-        if es_numero(entrada):
-            calorias = float(entrada)
-        else:
-            print("Tiene que ser un numero positivo, por ejemplo 12.5")
-
-    proteinas = -1
-    while proteinas < 0:
-        entrada = input("Proteinas cada 100 g: ")
-        if es_numero(entrada):
-            proteinas = float(entrada)
-        else:
-            print("Tiene que ser un numero positivo, por ejemplo 12.5")
-
-    carbohidratos = -1
-    while carbohidratos < 0:
-        entrada = input("Carbohidratos cada 100 g: ")
-        if es_numero(entrada):
-            carbohidratos = float(entrada)
-        else:
-            print("Tiene que ser un numero positivo, por ejemplo 12.5")
-
-    grasas = -1
-    while grasas < 0:
-        entrada = input("Grasas cada 100 g: ")
-        if es_numero(entrada):
-            grasas = float(entrada)
-        else:
-            print("Tiene que ser un numero positivo, por ejemplo 12.5")
-
+    valores = []
+    for nutriente in NUTRIENTES:
+        valores.append(pedir_numero(nutriente.capitalize() + " cada 100 g: ", 0, 1000000, None))
     agregar_alimento(lista_alimentos, nombre, categoria,
-                     calorias, proteinas, carbohidratos, grasas)
+                     valores[0], valores[1], valores[2], valores[3])
     if not guardar_lista("catalogo.json", lista_alimentos):
         lista_alimentos.pop()
         return
@@ -197,6 +174,55 @@ def pedir_fecha(mensaje, jornada, usar_jornada):
     return fecha
 
 
+def pedir_opcion(mensaje, opciones):
+    valor = input(mensaje).strip().lower()
+    while valor not in opciones:
+        print("Opciones disponibles: " + ", ".join(opciones))
+        valor = input(mensaje).strip().lower()
+    return valor
+
+
+def pedir_dato_perfil(campo, mensaje):
+    minimo, maximo = RANGOS_PERFIL[campo]
+    valor = pedir_numero(mensaje, minimo, maximo, None)
+    if campo != "edad":
+        return valor
+    while valor != int(valor):
+        print("La edad tiene que ser un numero entero.")
+        valor = pedir_numero(mensaje, minimo, maximo, None)
+    return int(valor)
+
+
+def opcion_perfil(perfiles, tabla):
+    if perfiles:
+        perfil = perfiles[0]
+        print(f"{perfil['nombre']} | {perfil['edad']} anios | sexo: {perfil['sexo']} | "
+              f"{perfil['peso']} kg | {perfil['altura']} cm | actividad {perfil['actividad']}")
+        referencia = calcular_referencia(perfil, tabla)
+        if referencia:
+            print("Valores diarios de referencia:", referencia)
+        if pedir_opcion("Editar perfil? (s/n): ", ("s", "n")) == "n":
+            return
+
+    nombre = input("Nombre (Enter para volver): ").strip()
+    if not nombre:
+        return
+    perfil = {"nombre": nombre, "edad": pedir_dato_perfil("edad", "Edad: "),
+              "sexo": pedir_opcion("Sexo biologico (f/m): ", ("f", "m")),
+              "peso": pedir_dato_perfil("peso", "Peso en kg: "),
+              "altura": pedir_dato_perfil("altura", "Altura en cm: "),
+              "actividad": pedir_opcion("Actividad (baja/media/alta): ", ACTIVIDADES)}
+    if guardar_lista("perfil.json", [perfil]):
+        perfiles.clear()
+        perfiles.append(perfil)
+        print("Perfil guardado.")
+        referencia = calcular_referencia(perfil, tabla)
+        if referencia:
+            print("Valores diarios de referencia:", referencia)
+        else:
+            print("No se pudo calcular una referencia con los datos y la tabla actuales.")
+
+
 def mostrar_menu():
     print()
     print("===== NutriLog =====")
@@ -208,4 +234,5 @@ def mostrar_menu():
     print("6. Ver consumos de la jornada")
     print("7. Ver resumen de la jornada")
     print("8. Consultar un dia del historial")
+    print("9. Ver o editar el perfil")
     print("0. Finalizar")
