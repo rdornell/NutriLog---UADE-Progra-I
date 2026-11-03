@@ -6,7 +6,7 @@ from reportes import calcular_referencia
 from interfaz import (mostrar_menu, mostrar_alimentos, mostrar_consumos, mostrar_resumen,
                       opcion_buscar_alimento, opcion_filtrar_categoria,
                       opcion_cargar_alimento, opcion_registrar_consumo, pedir_fecha,
-                      opcion_perfil)
+                      opcion_perfil, opcion_reporte)
 
 
 def main():
@@ -45,6 +45,8 @@ def main():
                 mostrar_resumen(registros, referencia)
         elif opcion == "9":
             opcion_perfil(perfiles, tabla)
+        elif opcion == "10":
+            opcion_reporte(consumos, referencia)
         elif opcion == "0":
             print("Hasta luego.")
         else:

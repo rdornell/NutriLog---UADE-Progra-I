@@ -1,3 +1,7 @@
+from logica import calcular_resumen
+from modelo import NUTRIENTES, mostrar_fecha
+
+
 def calcular_referencia(perfil, tabla):
     for fila in tabla:
         if fila["sexo"] == perfil["sexo"] and fila["actividad"] == perfil["actividad"]:
@@ -25,3 +29,51 @@ def comparar(consumo, referencia):
     else:
         estado = "adecuado"
     return porcentaje, estado
+
+
+def reporte_del_rango(consumos, desde, hasta, referencia):
+    por_dia = {}
+    for consumo in consumos:
+        fecha = consumo["fecha"]
+        if fecha >= desde and fecha <= hasta:
+            if fecha not in por_dia:
+                por_dia[fecha] = []
+            por_dia[fecha].append(consumo)
+    if not por_dia:
+        return []
+
+    resumenes = []
+    for registros in por_dia.values():
+        resumenes.append(calcular_resumen(registros))
+    # matriz: una fila por nutriente y una columna por cada dato del reporte
+    filas = []
+    for nutriente in NUTRIENTES:
+        valores = []
+        for resumen in resumenes:
+            valores.append(resumen[nutriente])
+        dentro = "-"
+        fuera = "-"
+        if referencia:
+            dentro = 0
+            for valor in valores:
+                porcentaje, estado = comparar(valor, referencia[nutriente])
+                if estado == "adecuado":
+                    dentro += 1
+            fuera = len(valores) - dentro
+        filas.append([nutriente, round(sum(valores) / len(valores), 2),
+                      min(valores), max(valores), dentro, fuera])
+    return filas
+
+
+ENCABEZADOS = ("Nutriente", "Promedio", "Minimo", "Maximo", "Dias dentro", "Dias fuera")
+
+
+def texto_reporte(desde, hasta, filas):
+    titulo = "Reporte del " + mostrar_fecha(desde) + " al " + mostrar_fecha(hasta)
+    lineas = [titulo, " | ".join(ENCABEZADOS)]
+    for fila in filas:
+        columnas = []
+        for valor in fila:
+            columnas.append(str(valor))
+        lineas.append(" | ".join(columnas))
+    return "\n".join(lineas)

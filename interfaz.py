@@ -1,6 +1,6 @@
 from archivos import guardar_lista
 from modelo import ACTIVIDADES, NUTRIENTES, RANGOS_PERFIL, fecha_valida, convertir_fecha
-from reportes import calcular_referencia, comparar
+from reportes import calcular_referencia, comparar, reporte_del_rango, texto_reporte
 from logica import (buscar_alimento, buscar_por_nombre, filtrar_por_categoria,
                     listar_categorias, agregar_alimento, registrar_consumo,
                     calcular_resumen, es_numero)
@@ -223,6 +223,21 @@ def opcion_perfil(perfiles, tabla):
             print("No se pudo calcular una referencia con los datos y la tabla actuales.")
 
 
+def opcion_reporte(consumos, referencia):
+    desde = pedir_fecha("Ingrese la fecha de inicio (DD/MM/AAAA): ", None, False)
+    hasta = pedir_fecha("Ingrese la fecha de fin (DD/MM/AAAA): ", None, False)
+    if hasta < desde:
+        print("La fecha final debe ser igual o posterior a la inicial.")
+        return
+    filas = reporte_del_rango(consumos, desde, hasta, referencia)
+    if not filas:
+        print("No hay consumos registrados en ese rango.")
+        return
+    if referencia is None:
+        print("Cargue un perfil con valores de referencia para comparar los dias.")
+    print(texto_reporte(desde, hasta, filas))
+
+
 def mostrar_menu():
     print()
     print("===== NutriLog =====")
@@ -235,4 +250,5 @@ def mostrar_menu():
     print("7. Ver resumen de la jornada")
     print("8. Consultar un dia del historial")
     print("9. Ver o editar el perfil")
+    print("10. Ver reporte por fechas")
     print("0. Finalizar")
