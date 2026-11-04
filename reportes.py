@@ -77,3 +77,16 @@ def texto_reporte(desde, hasta, filas):
             columnas.append(str(valor))
         lineas.append(" | ".join(columnas))
     return "\n".join(lineas)
+
+
+def exportar_reporte(desde, hasta, filas):
+    nombre = "reporte_" + desde + "_" + hasta
+    with open(nombre + ".txt", "w", encoding="utf-8") as archivo:
+        archivo.write(texto_reporte(desde, hasta, filas) + "\n")
+    with open(nombre + ".csv", "w", encoding="utf-8") as archivo:
+        archivo.write("Desde,Hasta," + ",".join(ENCABEZADOS) + "\n")
+        for fila in filas:
+            columnas = [mostrar_fecha(desde), mostrar_fecha(hasta)]
+            for valor in fila:
+                columnas.append(str(valor))
+            archivo.write(",".join(columnas) + "\n")

@@ -1,6 +1,6 @@
 from archivos import guardar_lista
 from modelo import ACTIVIDADES, NUTRIENTES, RANGOS_PERFIL, fecha_valida, convertir_fecha
-from reportes import calcular_referencia, comparar, reporte_del_rango, texto_reporte
+from reportes import calcular_referencia, comparar, exportar_reporte, reporte_del_rango, texto_reporte
 from logica import (buscar_alimento, buscar_por_nombre, filtrar_por_categoria,
                     listar_categorias, agregar_alimento, registrar_consumo,
                     calcular_resumen, es_numero)
@@ -236,6 +236,12 @@ def opcion_reporte(consumos, referencia):
     if referencia is None:
         print("Cargue un perfil con valores de referencia para comparar los dias.")
     print(texto_reporte(desde, hasta, filas))
+    if pedir_opcion("Exportar en TXT y CSV? (s/n): ", ("s", "n")) == "s":
+        try:
+            exportar_reporte(desde, hasta, filas)
+            print("Se exporto el reporte en la carpeta del programa.")
+        except IOError:
+            print("No se pudieron completar las dos exportaciones.")
 
 
 def mostrar_menu():
