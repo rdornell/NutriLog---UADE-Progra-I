@@ -84,3 +84,17 @@ def consumos_del_dia(lista_consumos, fecha):
         if consumo["fecha"] == fecha:
             encontrados.append(consumo)
     return encontrados
+
+
+def editar_consumo(consumo, gramos, fecha):
+    nuevo = consumo.copy()
+    if gramos != consumo["gramos"]:
+        if "base" in consumo:
+            nuevo.update(calcular_aporte(consumo["base"], gramos))
+        else:
+            proporcion = gramos / consumo["gramos"]
+            for clave in NUTRIENTES:
+                nuevo[clave] = round(consumo[clave] * proporcion, 2)
+    nuevo["gramos"] = gramos
+    nuevo["fecha"] = fecha
+    return nuevo

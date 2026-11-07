@@ -3,7 +3,7 @@ from modelo import ACTIVIDADES, NUTRIENTES, RANGOS_PERFIL, fecha_valida, convert
 from reportes import calcular_referencia, comparar, exportar_reporte, reporte_del_rango, texto_reporte
 from logica import (buscar_alimento, buscar_por_nombre, filtrar_por_categoria,
                     listar_categorias, agregar_alimento, registrar_consumo,
-                    calcular_resumen, es_numero)
+                    calcular_resumen, es_numero, editar_consumo)
 
 
 def mostrar_alimentos(lista_alimentos):
@@ -244,6 +244,94 @@ def opcion_reporte(consumos, referencia):
             print("No se pudieron completar las dos exportaciones.")
 
 
+def opcion_cambiar_alimento(alimentos, consumos):
+    nombre = input("Nombre completo del alimento (Enter para volver): ").strip()
+    if not nombre:
+        return
+    alimento = buscar_alimento(alimentos, nombre)
+    if alimento is None:
+        print("No se encontro ese alimento en el catalogo.")
+        return
+    accion = pedir_opcion("Editar o eliminar? (e/b, 0 para volver): ", ("e", "b", "0"))
+    if accion == "0":
+        return
+    nuevos = alimentos.copy()
+    indice = alimentos.index(alimento)
+    if accion == "b":
+        registros = consumos
+        nombre_actual = alimento["nombre"].lower()
+        nombres = set()
+        for registro in registros:
+            nombres.add(registro["nombre"].lower())
+        asociado = nombre_actual in nombres
+        if asociado:
+            print("El alimento figura en consumos registrados. Sus aportes se conservan.")
+        if pedir_opcion("Eliminar del catalogo? (s/n): ", ("s", "n")) == "n":
+            return
+        nuevos.pop(indice)
+    else:
+        print("Presione Enter para mantener un dato.")
+        nuevo = alimento.copy()
+        nombre = input(f"Nombre [{alimento['nombre']}]: ").strip()
+        if nombre == "":
+            nombre = alimento["nombre"]
+        if (nombre.lower() != alimento["nombre"].lower()
+                and buscar_alimento(alimentos, nombre) is not None):
+            print("Ya existe un alimento con ese nombre.")
+            return
+        nuevo["nombre"] = nombre
+        categoria = input(f"Categoria [{alimento['categoria']}]: ").strip()
+        if categoria == "":
+            categoria = alimento["categoria"]
+        nuevo["categoria"] = categoria
+        for clave in NUTRIENTES:
+            nuevo[clave] = pedir_numero(f"{clave} cada 100 g [{alimento[clave]}]: ",
+                                       0, 1000000, alimento[clave])
+        nuevos[indice] = nuevo
+    if guardar_lista("catalogo.json", nuevos):
+        alimentos.clear()
+        alimentos.extend(nuevos)
+        print("Catalogo actualizado.")
+
+
+def opcion_cambiar_consumo(consumos, jornada):
+    fecha = pedir_fecha("Ingrese la fecha del consumo (DD/MM/AAAA): ", None, False)
+    indices = []
+    for i in range(len(consumos)):
+        if consumos[i]["fecha"] == fecha:
+            indices.append(i)
+    if not indices:
+        print("No hay consumos registrados en esa fecha.")
+        return
+    opciones = ["0"]
+    for i in range(len(indices)):
+        consumo = consumos[indices[i]]
+        numero = str(i + 1)
+        print(f"{numero}. {consumo['nombre']} ({consumo['gramos']} g)")
+        opciones.append(numero)
+    numero = int(pedir_opcion("Numero del consumo (0 para volver): ", opciones))
+    if numero == 0:
+        return
+    indice = indices[numero - 1]
+    accion = pedir_opcion("Editar o eliminar? (e/b, 0 para volver): ", ("e", "b", "0"))
+    if accion == "0":
+        return
+    nuevos = consumos.copy()
+    if accion == "b":
+        if pedir_opcion("Eliminar este consumo? (s/n): ", ("s", "n")) == "n":
+            return
+        nuevos.pop(indice)
+    else:
+        print("Presione Enter para conservar la cantidad.")
+        gramos = pedir_gramos(consumos[indice]["gramos"])
+        fecha_nueva = pedir_fecha("Ingrese la nueva fecha del consumo (DD/MM/AAAA): ", jornada, False)
+        nuevos[indice] = editar_consumo(consumos[indice], gramos, fecha_nueva)
+    if guardar_lista("consumos.json", nuevos):
+        consumos.clear()
+        consumos.extend(nuevos)
+        print("Consumos actualizados.")
+
+
 def mostrar_menu():
     print()
     print("===== NutriLog =====")
@@ -257,4 +345,6 @@ def mostrar_menu():
     print("8. Consultar un dia del historial")
     print("9. Ver o editar el perfil")
     print("10. Ver reporte por fechas")
+    print("11. Editar o eliminar un alimento")
+    print("12. Editar o eliminar un consumo")
     print("0. Finalizar")
