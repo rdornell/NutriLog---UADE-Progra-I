@@ -86,6 +86,32 @@ def consumos_del_dia(lista_consumos, fecha):
     return encontrados
 
 
+def sumar_gramos(componentes):
+    # caso base: no quedan ingredientes
+    if len(componentes) == 0:
+        return 0
+    # caso recursivo: el primero mas la suma del resto
+    return componentes[0]["gramos"] + sumar_gramos(componentes[1:])
+
+
+def registrar_comida(consumos, comida, fecha):
+    componentes = comida["componentes"]
+    gramos = sumar_gramos(componentes)
+    ingredientes = []
+    totales = {"calorias": 0, "proteinas": 0, "carbohidratos": 0, "grasas": 0}
+    for parte in componentes:
+        ingredientes.append(parte["nombre"])
+        for clave in NUTRIENTES:
+            totales[clave] += parte[clave]
+    consumo = {"nombre": comida["nombre"], "fecha": fecha, "gramos": gramos,
+               "base": {}, "ingredientes": ingredientes}
+    for clave in NUTRIENTES:
+        consumo["base"][clave] = totales[clave] / gramos * 100
+        consumo[clave] = round(totales[clave], 2)
+    consumos.append(consumo)
+    return consumo
+
+
 def editar_consumo(consumo, gramos, fecha):
     nuevo = consumo.copy()
     if gramos != consumo["gramos"]:

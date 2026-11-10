@@ -3,5 +3,6 @@ __pycache__/
 /catalogo.json
 /consumos.json
 /perfil.json
+/comidas.json
 /reporte_*.txt
 /reporte_*.csv

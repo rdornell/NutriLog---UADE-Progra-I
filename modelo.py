@@ -82,6 +82,12 @@ def consumo_valido(dato):
     if "base" in dato and (type(base) != dict
                            or not nutrientes_validos(base)):
         return False
+    ingredientes = dato.get("ingredientes", [])
+    if type(ingredientes) != list:
+        return False
+    for nombre in ingredientes:
+        if type(nombre) != str:
+            return False
     return (tiene_texto(dato, "nombre")
             and tiene_numero(dato, "gramos") and dato["gramos"] > 0
             and nutrientes_validos(dato))
@@ -107,3 +113,15 @@ def fila_referencia_valida(fila):
     return (type(fila) == dict and fila.get("sexo") in ("f", "m")
             and fila.get("actividad") in ACTIVIDADES and tiene_numero(fila, "factor")
             and fila["factor"] >= 1 and fila["factor"] <= 3)
+
+
+def comida_valida(comida):
+    if type(comida) != dict or not tiene_texto(comida, "nombre"):
+        return False
+    partes = comida.get("componentes")
+    if type(partes) != list or len(partes) < 2:
+        return False
+    for parte in partes:
+        if not consumo_valido(parte):
+            return False
+    return True

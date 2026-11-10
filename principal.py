@@ -1,19 +1,20 @@
 from archivos import cargar_lista
 from logica import consumos_del_dia
 from modelo import (catalogo, mostrar_fecha, alimento_valido, consumo_valido, perfil_valido,
-                    fila_referencia_valida)
+                    fila_referencia_valida, comida_valida)
 from reportes import calcular_referencia
 from interfaz import (mostrar_menu, mostrar_alimentos, mostrar_consumos, mostrar_resumen,
                       opcion_buscar_alimento, opcion_filtrar_categoria,
                       opcion_cargar_alimento, opcion_registrar_consumo, pedir_fecha,
                       opcion_perfil, opcion_reporte, opcion_cambiar_alimento,
-                      opcion_cambiar_consumo)
+                      opcion_cambiar_consumo, opcion_comidas)
 
 
 def main():
     alimentos = cargar_lista("catalogo.json", catalogo, alimento_valido)
     consumos = cargar_lista("consumos.json", [], consumo_valido)
     perfiles = cargar_lista("perfil.json", [], perfil_valido)
+    comidas = cargar_lista("comidas.json", [], comida_valida)
     tabla = cargar_lista("referencias.json", [], fila_referencia_valida)
     jornada = pedir_fecha("Ingrese la fecha de la jornada (DD/MM/AAAA): ", None, False)
     opcion = ""
@@ -49,9 +50,11 @@ def main():
         elif opcion == "10":
             opcion_reporte(consumos, referencia)
         elif opcion == "11":
-            opcion_cambiar_alimento(alimentos, consumos)
+            opcion_cambiar_alimento(alimentos, consumos, comidas)
         elif opcion == "12":
             opcion_cambiar_consumo(consumos, jornada)
+        elif opcion == "13":
+            opcion_comidas(alimentos, consumos, comidas, jornada)
         elif opcion == "0":
             print("Hasta luego.")
         else:
